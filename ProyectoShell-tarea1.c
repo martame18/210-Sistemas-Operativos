@@ -52,11 +52,11 @@ int main(void)
             printf("Que pasa broo, yo soy el padre!\n");
             pid_t mipid = getpid();
             if (background == 1){ //si el proceso se ejecuta en segundo plano
-                printf("Comando %s ejecutando en segundo plano con pid %i.", args[0], mipid);
+                printf("Comando %s ejecutando en segundo plano con pid %i.\n", args[0], mipid);
                 continue;     //continua, repitiendo el bucle
             } else{             //si el proceso se ejecuta en primer plano
-                pid_wait = waitpid(pid_fork);  //el padre espera a que su hijo termine
-                printf("Comando %s ejecutado en primer plano con pid %i. Estado finalizado.", args[0], mipid);
+                pid_wait = waitpid(pid_fork, &status, WUNTRACED);  //el padre espera a que su hijo termine
+                printf("Comando %s ejecutado en primer plano con pid %i. Estado finalizado.\n", args[0], mipid);
             }
         }
       } // end while
