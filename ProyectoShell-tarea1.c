@@ -46,16 +46,16 @@ int main(void)
     */
         pid_fork = fork();    //crea un proceso hijo
         if (pid_fork == 0){   //código del hijo
-            printf("Hola! soy el hijo:)");
+            printf("Hola! soy el hijo:)\n");
             execvp(args[0], args);
         } else{               //código del padre
-            printf("Que pasa broo, yo soy el padre!");
+            printf("Que pasa broo, yo soy el padre!\n");
             pid_t mipid = getpid();
             if (background == 1){ //si el proceso se ejecuta en segundo plano
                 printf("Comando %s ejecutando en segundo plano con pid %i.", args[0], mipid);
                 continue;     //continua, repitiendo el bucle
             } else{             //si el proceso se ejecuta en primer plano
-                pid_wait = wait(NULL);  //el padre espera a que su hijo termine
+                pid_wait = waitpid(pid_fork);  //el padre espera a que su hijo termine
                 printf("Comando %s ejecutado en primer plano con pid %i. Estado finalizado.", args[0], mipid);
             }
         }
