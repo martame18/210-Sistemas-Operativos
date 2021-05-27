@@ -20,12 +20,13 @@ Para salir del programa en ejecuci�n, pulsar Control+D
 //                     MAIN          
 // --------------------------------------------
 
-void micomando(String a){
-    switch(a){
-        case logouto:  // si el usuario introduce "logout"
-            exit();
-        break;
-    }
+// método para ejecutar un comando interno de mi shell
+void leercomando(char args[]){  // comandos internos que puede ejecutar: cd, logout
+    if (strcmp(args[0], "cd") == 0){   // si el comando introducido es "cd"
+            /* getenv("patata") -> busca entre la lista de variables de entorno que podría ser "patata" y devuelve el puntero exacto de dicha variable */
+        if (args[1] == NULL) chdir(getenv("HOME")); // si no se introduce un directorio como parámetro, se cambia al directorio por defecto
+        else chdir(args[1]);
+    } else if (strcmp(args[0], "logout") == 0) exit();  // si el comando introducido es "logout"
 }
 
 int main(void)
@@ -45,26 +46,25 @@ int main(void)
         fflush(stdout);
         get_command(inputBuffer, MAX_LINE, args, &background); // Obtener el pr�ximo comando
         if (args[0]==NULL) continue; // Si se introduce un comando vac�o, no hacemos nada
-    /* Los pasos a seguir a partir de aqu�, son:
-       (1) Genera un proceso hijo con fork()
-       (2) El proceso hijo invocar� a execvp()
-       (3) El proceso padre esperar� si background es 0; de lo contrario, "continue" 
-       (4) El Shell muestra el mensaje de estado del comando procesado 
-       (5) El bucle regresa a la funci�n get_command()
-    */
+
+        // Aquí empieza la acción
         pid_fork = fork();    //crea un proceso hijo
-        if (pid_fork == 0){   //código del hijo
+        if (pid_fork == 0){   
+            //código del hijo
             printf("Hola! soy el hijo:)\n");
-            execvp(args[0], args);
-            micomando(args[0]);
-        } else{               //código del padre
+            execvp(args[0], args);  //ejecuta un comando externo
+            leercomando(args);      //ejecuta un comando interno
+            printf("Error. Comando %s no encontrado.\n", args[0]);
+			exit(EXIT_FAILURE);     // error si no reconoce el comando
+        } else{            
+            //código del padre   
             printf("Que pasa broo, yo soy el padre!\n");
-            pid_t mipid = getpid();
+            pid_t mipid = getpid(); // mipid = pid del hijo
             if (background == 1){ //si el proceso se ejecuta en segundo plano
                 printf("Comando %s ejecutando en segundo plano con pid %i.\n", args[0], mipid);
                 continue;     //continua, repitiendo el bucle
             } else{             //si el proceso se ejecuta en primer plano
-                pid_wait = waitpid(pid_fork, &status, WUNTRACED);  //el padre espera a que su hijo termine
+                pid_wait esperopid = waitpid(pid_fork, &status, WUNTRACED | WNOHANG | WCONTINUED);  //el padre espera a que su hijo termine
                 printf("Comando %s ejecutado en primer plano con pid %i. Estado finalizado.\n", args[0], mipid);
             }
         }
