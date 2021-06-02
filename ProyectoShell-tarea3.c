@@ -31,8 +31,8 @@ int main(void)
       enum status status_res; // Estado procesado por analyze_status()
       int info;		      // Informaci�n procesada por analyze_status()
 
-      while (1) // El programa termina cuando se pulsa Control+D dentro de get_command()
-      {   		
+    while (1) // El programa termina cuando se pulsa Control+D dentro de get_command()
+    {   		
         printf("COMANDO->");
         fflush(stdout);
         get_command(inputBuffer, MAX_LINE, args, &background); // Obtener el pr�ximo comando
@@ -44,7 +44,7 @@ int main(void)
         if (pid_fork == 0){   
             //código del hijo
             printf("Hola! soy el hijo:)\n");
-            gpid = new_process_group(getpid());  //gpid = pid del grupo de procesos (que surgen del hijo)
+            int gpid = new_process_group(getpid());  //gpid = pid del grupo de procesos (que surgen del hijo)
             if (!background)   set_terminal(gpid);  //si el proceso se ejecuta en primer plano => acapara el terminal
             restore_terminal_signals();
             execvp(args[0], args);  //ejecuta un comando externo
@@ -68,13 +68,14 @@ int main(void)
                 }
                 
             }
-      } // end while
+        }
+    } // end while
 }
 
 // método para ejecutar un comando interno de mi shell
 void leercomando(char * args[]){  // comandos internos que puede ejecutar: cd, logout
     if (strcmp(args[0], "cd") == 0){   // si el comando introducido es "cd"
-            /* getenv("patata") -> busca entre la lista de variables de entorno que podría ser "patata" y devuelve el puntero exacto de dicha variable */
+        /* getenv("patata") -> busca entre la lista de variables de entorno que podría ser "patata" y devuelve el puntero exacto de dicha variable */
         if (args[1] == NULL) chdir(getenv("HOME")); // si no se introduce un directorio como parámetro, se cambia al directorio por defecto
         else chdir(args[1]);
     } else if (strcmp(args[0], "logout") == 0) exit(EXIT_SUCCESS);  // si el comando introducido es "logout"
