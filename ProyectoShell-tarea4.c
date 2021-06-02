@@ -75,6 +75,8 @@ void leercomando(char args[]){  // comandos internos que puede ejecutar: cd, log
     } else if (strcmp(args[0], "logout") == 0) exit();  // si el comando introducido es "logout"
 }
 
+
+
 int main(void)
 {
       char inputBuffer[MAX_LINE]; // B�fer que alberga el comando introducido
