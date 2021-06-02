@@ -15,7 +15,7 @@ Para salir del programa en ejecuci�n, pulsar Control+D
  
 #define MAX_LINE 256 // 256 caracteres por l�nea para cada comando es suficiente
 #include <string.h>  // Para comparar cadenas de cars. (a partir de la tarea 2)
-
+job * listatareas;
 // --------------------------------------------
 //                     MAIN          
 // --------------------------------------------
@@ -25,6 +25,7 @@ void manejador(int segnal){
     job * auxi;
     enum status estado; 
     int infoTarea, statusTarea, waitTarea;
+    listatareas = new_list("Lista_Tareas");  //crea la lista de tareas en segundo plano, suspendidas y detenidas.
     while (list_size(listatareas) > 0){   //mientras que la lista de tareas no esté vacía la recorremos
         for (int i=list_size(listatareas); i>=0; i--){ 
             auxi = get_item_bypos(listatareas, i);
@@ -36,7 +37,7 @@ void manejador(int segnal){
                 } else{
                     printf("Comando %s ejecutado en segundo plano con PID %i ha finalizado.\n", auxi->command, auxi->pgid);
                 }
-                delete_job(listaTareas, auxi);
+                delete_job(listatareas, auxi);
             } else{
                 waitTarea = waitpid(auxi->pgid, &statusTarea, WUNTRACED);  // comprobamos si la tarea se ha suspendido
                 if (auxi->pgid == waitTarea){ //si la tarea se ha suspendido, imprimimos un mensaje y la pasamos a DETENIDO
@@ -63,7 +64,7 @@ void manejador(int segnal){
 
 // método para comprobar si un comando es interno de mishell o no: 1 si interno, 0 si externo
 int esinterno(char args0){
-    if (args0 == "cd" || args0 == "logout") return 1;
+    if (strcmp(args0, "cd") == 0 || strcmp(args0,"logout")==0) return 1;
     else return 0;
 }
 // método para ejecutar un comando interno de mi shell
@@ -132,7 +133,7 @@ int main(void)
       {   		
         ignore_terminal_signals();   // ignorar señales del terminal
         signal(SIGCHLD, manejador);  // activa el manejador
-        listatareas = new_list("Lista_Tareas");  //crea la lista de tareas en segundo plano, suspendidas y detenidas.
+        
         printf("COMANDO->");
         fflush(stdout);
         get_command(inputBuffer, MAX_LINE, args, &background); // Obtener el pr�ximo comando
