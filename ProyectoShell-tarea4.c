@@ -29,28 +29,33 @@ void manejador(int segnal){
         for (int i=list_size(listatareas); i>=0; i--){ 
             auxi = get_item_bypos(listatareas, i);
 
-            if (auxi->ground == ground.PRIMERPLANO){   // si la tarea está en primer plano entró en suspensión
-                waitTarea = waitpid(auxi->pgid, &statusTarea, WCONTINUED);  // comprobamos si la tarea se ha reanudado
-                if (waitTarea == auxi->pgid){      // si la tarea ha pasado de suspendido a reanudado lo notificamos
-                    printf("Comando %s ejecutado en primer plano con PID %i ha reanudado su ejecución.\n", auxi->command, auxi->pgid);
+            waitTarea = waitpid(auxi->pgid, &statusTarea, WNOHANG);  // comprobamos si la tarea ha terminado
+            if (auxi->pgid == waitTarea){ //si la tarea ha terminado, imprimimos un mensaje y la borramos de la lista de tareas
+                if (auxi->ground == PRIMERPLANO){
+                    printf("Comando %s ejecutado en primer plano con PID %i ha finalizado.\n", auxi->command, auxi->pgid);
                 } else{
-                    waitTarea = waitpid(auxi->pgid, &statusTarea, WNOHANG); // comprobamos si la tarea ha terminado
-                    if(waitTarea == auxi->pgid){   // si la tarea ha terminado lo notificamos y la eliminamos de la lista de tareas
-                        printf("Comando %s ejecutado en primer plano con PID %i ha finalizado.\n", auxi->command, auxi->pgid);
-                        delete_job(listaTareas, auxi);
+                    printf("Comando %s ejecutado en segundo plano con PID %i ha finalizado.\n", auxi->command, auxi->pgid);
+                }
+                delete_job(listaTareas, auxi);
+            } else{
+                waitTarea = waitpid(auxi->pgid, &statusTarea, WUNTRACED);  // comprobamos si la tarea se ha suspendido
+                if (auxi->pgid == waitTarea){ //si la tarea se ha suspendido, imprimimos un mensaje y la pasamos a DETENIDO
+                    if(auxi->ground == PRIMERPLANO){
+                        printf("Comando %s ejecutado en primer plano con PID %i se ha suspendido.\n", auxi->command, auxi->pgid);
+                    } else{
+                        printf("Comando %s ejecutado en segundo plano con PID %i se ha suspendido.\n", auxi->command, auxi->pgid);
+                    }
+                    auxi->ground = DETENIDO;
+                } else{
+                    waitTarea = waitpid(auxi->pgid, &statusTarea, WCONTINUED);  // comprobamos si la tarea se ha reanudado
+                    if (auxi->pgid == waitTarea){ //si la tarea se ha reanudado, imprimimos un mensaje
+                        if(auxi->ground == PRIMERPLANO){
+                            printf("Comando %s ejecutado en primer plano con PID %i ha reanudado su ejecución.\n", auxi->command, auxi->pgid);
+                        } else{
+                            printf("Comando %s ejecutado en segundo plano con PID %i ha reanudado su ejecución.\n", auxi->command, auxi->pgid);
+                        }
                     }
                 }
-                
-            } /*else if(auxi->ground == ground.SEGUNDOPLANO){  // si la tarea está en segundo plano pudo entrar en cualquiera de los tres estados
-                waitTarea = waitpid(auxi->pgid, &statusTarea, WNOHANG | WCONTINUED);  // solo comprobamos si la tarea está en estado reanudado o finalizado
-                if (waitTarea == auxi->pgid){    
-                    estado = analyze_status(statusTarea, &infoTarea);
-                    if (estado == status.REANUDADO){   // si la tarea ha pasado de suspendido a reanudado lo notificamos
-                        printf("Comando %s ejecutado en primer plano con PID %i ha reanudado su ejecución.\n", auxi->command, auxi->pgid);
-                    } else {  // si la tarea ha finalizado
-                        printf("Comando %s ejecutado en primer plano con PID %i ha finalizado.\n", auxi->command, auxi->pgid);
-                    }
-                }*/
             }
         }
     }
