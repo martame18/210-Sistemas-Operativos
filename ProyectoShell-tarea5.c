@@ -88,15 +88,33 @@ void leercomando(char args[]){  // comandos internos que puede ejecutar: cd, log
 
 // Permite pasar a segundo plano un comando que se encuentre suspendido. pos es el lugar que ocupa en la listatareas
 void bg(char pos){
+    block_SIGCHLD();
     job * auxi;
-    if (pos == NULL) pos = 0;  // si no se introduce argumento, se utiliza la primera posición de la lista
-    if (pos < 0 || pos > list_size(listatareas)){  // si el argumento introducido no entra en los límites de la lista, se indica por pantalla
+    if (pos == NULL) pos = 1;  // si no se introduce argumento, se utiliza la primera posición de la lista
+    if (pos < 1 || pos > list_size(listatareas)){  // si el argumento introducido no entra en los límites de la lista, se indica por pantalla
         printf("Esta tarea no existe.");
     } else{  // si el argumento es válido
         auxi = get_item_bypos(listatareas, pos);
         auxi->ground = SEGUNDOPLANO;  // pasa el argumento de DETENIDO a SEGUNDOPLANO
         killpg(auxi->pgid, SIGCONT);
     }
+    unblock_SIGCHLD();
+}
+
+// Permite pasar a primer plano un comando que estuviera en segundo plano o suspendido, por lo que debe retomar el terminal. pos es el lugar que ocupa en listatareas
+void fg(char pos){
+    block_SIGCHLD();
+    job * auxi;
+    if (pos == NULL) pos = 1;   // si no se introduce argumento, se utiliza la primera posición de la lista
+    if (pos < 1 || pos > list_size(listatareas)){  // si el argumento introducido no entra en los límites de la lista, se indica por pantalla
+        printf("Esta tarea no existe.");
+    } else{  // si el argumento es válido
+        auxi = get_item_bypos(listatareas, pos); 
+        set_terminal(auxi->pgid);
+        delete_job(listatareas, auxi);
+        killpg(auxi->pgid, SIGCONT);
+    }
+    unblock_SIGCHLD();
 }
 
 int main(void)
