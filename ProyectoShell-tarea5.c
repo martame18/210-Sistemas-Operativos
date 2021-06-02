@@ -81,10 +81,23 @@ void leercomando(char args[]){  // comandos internos que puede ejecutar: cd, log
 		        printf("No hay tareas pendientes\n");  // si no hay tareas lo indica
 	        }
         unblock_SIGCHLD();
+    } else if (strcmp(args[0], "bg") == 0)){
+        bg(args[1]);
     }
 }
 
-
+// Permite pasar a segundo plano un comando que se encuentre suspendido. pos es el lugar que ocupa en la listatareas
+void bg(char pos){
+    job * auxi;
+    if (pos == NULL) pos = 0;  // si no se introduce argumento, se utiliza la primera posición de la lista
+    if (pos < 0 || pos > list_size(listatareas)){  // si el argumento introducido no entra en los límites de la lista, se indica por pantalla
+        printf("Esta tarea no existe.");
+    } else{  // si el argumento es válido
+        auxi = get_item_bypos(listatareas, pos);
+        auxi->ground = SEGUNDOPLANO;  // pasa el argumento de DETENIDO a SEGUNDOPLANO
+        killpg(auxi->pgid, SIGCONT);
+    }
+}
 
 int main(void)
 {
